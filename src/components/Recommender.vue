@@ -1,5 +1,6 @@
 <template>
   <div class="recommender">
+    <div v-if="loading" class="loader"></div>
     <div class="field">
       <div class="field__label">Enter a search string :</div>
       <input class="field__input" v-model="userInput" />
@@ -23,6 +24,9 @@
         <div>{{ getMovieYearFromTitle(movie) }}</div>
       </div>
     </div>
+    <div v-if="recommendations.length == 0" class="recommender__cta">
+      NO MOVIES TO SHOW
+    </div>
   </div>
 </template>
 
@@ -39,6 +43,7 @@ import { Input } from "vuesax";
 export default class Recommender extends Vue {
   private userInput = "";
   private n = 3;
+  private loading = false;
   private recommendations: string[] = [];
   private recommendations2 = [
     "The Fault in Our Stars (2014)",
@@ -52,15 +57,19 @@ export default class Recommender extends Vue {
   ];
 
   private getRecommendations() {
-    // axios
-    //   .get(
-    //     `https://movie-recommender-prod.herokuapp.com/movie/${this.userInput}?count=${this.n}`
-    //   )
-    //   .then((res: any) => {
-    //     console.log(res);
-    //     this.recommendations = res.data.data;
-    //   });
-    this.recommendations = this.recommendations2;
+    this.loading = true;
+    axios
+      .get(
+        `https://piplup-mew.herokuapp.com/movie/${this.userInput}?count=${this.n}`
+      )
+      .then((res: any) => {
+        console.log(res);
+        this.recommendations = res.data.data;
+        this.loading = false;
+      })
+      .catch(() => {
+        this.loading = false;
+      });
   }
 
   getMovieYearFromTitle(movie: string) {
@@ -112,6 +121,35 @@ export default class Recommender extends Vue {
     font-weight: 700;
     padding: 15px;
     margin: 40px 0px;
+  }
+  .loader {
+    border: 16px solid #f3f3f3;
+    border-radius: 50%;
+    border-top: 16px solid #3498db;
+    width: 120px;
+    height: 120px;
+    margin: auto;
+    -webkit-animation: spin 2s linear infinite; /* Safari */
+    animation: spin 2s linear infinite;
+  }
+
+  /* Safari */
+  @-webkit-keyframes spin {
+    0% {
+      -webkit-transform: rotate(0deg);
+    }
+    100% {
+      -webkit-transform: rotate(360deg);
+    }
+  }
+
+  @keyframes spin {
+    0% {
+      transform: rotate(0deg);
+    }
+    100% {
+      transform: rotate(360deg);
+    }
   }
 }
 </style>
